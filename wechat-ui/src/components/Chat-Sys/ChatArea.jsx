@@ -6,7 +6,6 @@ import {
   SearchIcon,
   SidebarIcon,
   VideosIcon,
-  ChatAddIcon,
   AddIcon,
   EmojiIcon,
   PhotoIcon,
