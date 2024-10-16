@@ -1,18 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios for API calls
+import axios from "axios";
 import facebook from "../../../assets/facebook.png";
 import google from "../../../assets/google.png";
 import apple from "../../../assets/apple.png";
-// import { GoogleLogin } from "@react-oauth/google";
-// import { jwtDecode } from "jwt-decode";
-// import { AccountContext } from "../../../context/AccountProvider";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +22,7 @@ function LoginForm() {
     try {
       const url = "http://localhost:8080/api/auth";
       const { data: res } = await axios.post(url, { email, password });
-      localStorage.setItem("token", res.data.token); // Save token in localStorage
+      localStorage.setItem("token", res.data.token);
       setError("");
       navigate("/app");
     } catch (error) {

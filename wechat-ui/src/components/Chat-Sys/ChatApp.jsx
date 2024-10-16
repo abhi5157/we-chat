@@ -3,24 +3,40 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import ChatArea from "./ChatArea";
 import UpdateNotification from "./UpdateNotification";
+import EditProfile from "./EditProfile";
 
 function ChatApp() {
   const [showNotification, setShowNotification] = useState(true);
   const [activeContact, setActiveContact] = useState(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   const handleSelectContact = (contact) => {
     setActiveContact(contact);
   };
 
+  const handleEditProfile = () => {
+    setShowEditProfile(true);
+  };
+
+  const handleCloseEditProfile = () => {
+    setShowEditProfile(false);
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          onSelectContact={handleSelectContact}
-          activeContactId={activeContact?.id}
-        />
-        <ChatArea activeContact={activeContact} />
+    <div className="flex flex-col h-screen bg-#E0F2F1">
+      <Header onEditProfile={handleEditProfile} />
+      <div className="flex flex-1 overflow-hidden ">
+        {showEditProfile ? (
+          <EditProfile onClose={handleCloseEditProfile} />
+        ) : (
+          <>
+            <Sidebar
+              onSelectContact={handleSelectContact}
+              activeContactId={activeContact?.id}
+            />
+            <ChatArea activeContact={activeContact} />
+          </>
+        )}
       </div>
       {showNotification && (
         <UpdateNotification onDismiss={() => setShowNotification(false)} />
