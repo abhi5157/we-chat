@@ -1,13 +1,16 @@
 import { useState } from "react";
-import SwipeableDrawer from "@mui/material/SwipeableDrawer";
-import ProfileSidebar from "./ProfileSidebar"; // Make sure to import the new component
+
+import ProfileSidebar from "./ProfileSidebar";
 
 import {
-  ContactsIcon,
   SearchIcon,
-  AddIcon,
   SidebarIcon,
   VideosIcon,
+  ChatAddIcon,
+  AddIcon,
+  EmojiIcon,
+  PhotoIcon,
+  RecordIcon,
 } from "./Icons";
 
 function ChatArea({ activeContact }) {
@@ -98,6 +101,8 @@ function ChatArea({ activeContact }) {
               </button>
             </div>
           </div>
+
+          {/* chat Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => (
               <div
@@ -121,51 +126,45 @@ function ChatArea({ activeContact }) {
               </div>
             ))}
           </div>
+
           <div className="bg-white p-4 flex items-center space-x-2">
+            <button
+              className="text-gray-600 hover:text-gray-300"
+              style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
+            >
+              <AddIcon />
+            </button>
+            <button
+              className="text-gray-600 hover:text-gray-300"
+              style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
+            >
+              <EmojiIcon />
+            </button>
             <button
               className="text-gray-600 hover:text-gray-800"
               style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                />
-              </svg>
+              <PhotoIcon />
             </button>
             <input
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type a message"
-              className="flex-1 border rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 border rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-grey-500"
             />
+
             <button
               onClick={handleSend}
-              className="bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600"
+              className=" text-white rounded-full p-2 hover:bg-gray-300"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
+              <RecordIcon />
+            </button>
+            <button
+              onClick={handleSend}
+              className=" text-white rounded-full p-2 hover:bg-gray-300"
+            >
+              <SearchIcon />
             </button>
           </div>
         </>

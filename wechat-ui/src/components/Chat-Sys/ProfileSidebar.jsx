@@ -169,7 +169,7 @@ const ProfileSidebar = ({ open, onClose, contact }) => {
           }}
         >
           <Avatar
-            src={"/api/placeholder/100/100"}
+            src={contact?.avatar || "/api/placeholder/100/100"}
             alt={contact?.name || "Contact"}
             sx={{ width: 100, height: 100, mb: 2 }}
           />
