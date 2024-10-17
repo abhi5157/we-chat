@@ -1,51 +1,55 @@
 import { useState } from "react";
 import {
-  Drawer,
   Box,
   Typography,
-  Avatar,
+  Grid,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   Divider,
-  IconButton,
 } from "@mui/material";
+import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 
-import {
-  Close as CloseIcon,
-  Phone as PhoneIcon,
-  Mail as MailIcon,
-  Info as InfoIcon,
-  AttachFile as AttachFileIcon,
-} from "@mui/icons-material";
-import { OptionsIcon, PhotoIcon } from "./Icons";
-import MuteModal from "./MuteModal";
+import { AttachFile as AttachFileIcon } from "@mui/icons-material";
 
-function MediaComp() {
+const MediaComponent = ({ onBack }) => {
+  const mediaItems = Array(4).fill(null);
+  const [documents] = useState([
+    { name: "Resume.pdf", size: "2.3 MB" },
+    { name: "Project_Proposal.docx", size: "1.5 MB" },
+    { name: "Meeting_Notes.txt", size: "0.5 MB" },
+    { name: "Presentation.pptx", size: "4.2 MB" },
+    { name: "Budget.xlsx", size: "1.8 MB" },
+    { name: "Report.pdf", size: "3.1 MB" },
+  ]);
+
   return (
-    <>
-      <List>
-        <ListItem>
-          <ListItemIcon>
-            <PhoneIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="Phone Number"
-            secondary={contact?.phone || "+1 (555) 123-4567"}
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemIcon>
-            <MailIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="Email"
-            secondary={contact?.email || "konstantin@example.com"}
-          />
-        </ListItem>
-      </List>
+    <Box sx={{ p: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <IconButton onClick={onBack} sx={{ mr: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h6">Media</Typography>
+      </Box>
+      <Grid container spacing={1}>
+        {mediaItems.map((_, index) => (
+          <Grid item xs={3} key={index}>
+            <Box
+              sx={{
+                width: "100%",
+                paddingTop: "100%",
+                backgroundColor: "#E0E0E0",
+                borderRadius: 1,
+              }}
+            />
+          </Grid>
+        ))}
+      </Grid>
+
       <Divider />
+
       <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
         Documents
       </Typography>
@@ -59,8 +63,8 @@ function MediaComp() {
           </ListItem>
         ))}
       </List>
-    </>
+    </Box>
   );
-}
+};
 
-export default MediaComp;
+export default MediaComponent;

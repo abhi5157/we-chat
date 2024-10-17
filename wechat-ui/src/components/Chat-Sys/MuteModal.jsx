@@ -53,10 +53,15 @@ const MuteModal = ({ open, onClose, onMute }) => {
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="white">
           Cancel
         </Button>
-        <Button onClick={handleMute} color="primary" variant="contained">
+        <Button
+          onClick={handleMute}
+          color="primary"
+          style={{ backgroundColor: "#26A69A" }}
+          variant="contained"
+        >
           Mute
         </Button>
       </DialogActions>

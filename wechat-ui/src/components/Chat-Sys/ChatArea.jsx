@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import EmojiPicker from "emoji-picker-react";
 import ProfileSidebar from "./ProfileSidebar";
+import AudioCallComponent from "./AudioCallComponent";
+
 import {
   SearchIcon,
   SidebarIcon,
@@ -9,6 +11,7 @@ import {
   EmojiIcon,
   PhotoIcon,
   RecordIcon,
+  AudioCallIcon,
 } from "./Icons";
 
 function ChatArea({ activeContact }) {
@@ -16,6 +19,7 @@ function ChatArea({ activeContact }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const [muteModalOpen, setMuteModalOpen] = useState(false);
+  const [AudioCallModal, setAudioCallModal] = useState(false);
 
   const handleMuteClick = () => {
     setMuteModalOpen(true);
@@ -28,6 +32,13 @@ function ChatArea({ activeContact }) {
   const handleMute = (duration) => {
     console.log(`Muted for ${duration} minutes`);
   };
+
+  const handleAudioCallClick = () => {
+    setIsAudioCallOpen(true);
+  };
+
+  const [isAudioCallOpen, setIsAudioCallOpen] = useState(false);
+
   const [messages, setMessages] = useState([
     { id: 1, sender: "user", content: "I hope these articles help." },
     {
@@ -109,21 +120,9 @@ function ChatArea({ activeContact }) {
               <button
                 className="text-gray-600 hover:text-gray-800"
                 style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
+                onClick={handleAudioCallClick}
               >
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 40 40"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <rect width="40" height="40" rx="6" fill="#E0F2F1" />
-                  <path
-                    fillRule="evenodd"
-                    d="M13.885 12.511C14.06 12.3363 14.2701 12.2008 14.5014 12.1134C14.7327 12.026 14.9799 11.9888 15.2267 12.0042C15.4735 12.0197 15.7142 12.0873 15.9328 12.2028C16.1515 12.3183 16.3431 12.4789 16.495 12.674L18.29 14.98C18.619 15.403 18.735 15.954 18.605 16.474L18.058 18.664C18.0299 18.7775 18.0315 18.8962 18.0627 19.0089C18.0939 19.1215 18.1536 19.2242 18.236 19.307L20.693 21.764C20.7759 21.8466 20.8788 21.9064 20.9916 21.9376C21.1044 21.9688 21.2234 21.9703 21.337 21.942L23.526 21.395C23.7826 21.3312 24.0504 21.3264 24.3091 21.381C24.5679 21.4356 24.8109 21.548 25.02 21.71L27.326 23.504C28.155 24.149 28.231 25.374 27.489 26.115L26.455 27.149C25.715 27.889 24.609 28.214 23.578 27.851C20.9387 26.9236 18.5425 25.4128 16.568 23.431C14.5864 21.4568 13.0755 19.061 12.148 16.422C11.786 15.392 12.111 14.285 12.851 13.545L13.885 12.511Z"
-                    fill="#475569"
-                  />
-                </svg>
+                <AudioCallIcon />
               </button>
               <button
                 className="text-gray-600 hover:text-gray-800"
@@ -228,8 +227,79 @@ function ChatArea({ activeContact }) {
         onMuteClose={handleMuteClose}
         onMute={handleMute}
       />
+
+      <AudioCallComponent
+        open={isAudioCallOpen}
+        onClose={() => setIsAudioCallOpen(false)}
+        contact={activeContact}
+      />
     </div>
   );
 }
 
 export default ChatArea;
+
+// import { useState, useRef } from "react";
+// import EmojiPicker from "emoji-picker-react";
+// import ProfileSidebar from "./ProfileSidebar";
+// import AudioCallComponent from "./AudioCallComponent";
+
+// import {
+//   SearchIcon,
+//   SidebarIcon,
+//   VideosIcon,
+//   AddIcon,
+//   EmojiIcon,
+//   PhotoIcon,
+//   RecordIcon,
+//   AudioCallIcon,
+// } from "./Icons";
+
+// function ChatArea({ activeContact }) {
+//   // ... (previous state variables)
+//   const [isAudioCallOpen, setIsAudioCallOpen] = useState(false);
+
+//   // ... (previous functions)
+
+//   const handleAudioCallClick = () => {
+//     setIsAudioCallOpen(true);
+//   };
+
+//   return (
+//     <div
+//       className="flex-1 flex flex-col"
+//       style={{
+//         backgroundColor: activeContact ? "white" : "#E0F2F1",
+//       }}
+//     >
+//       {activeContact && (
+//         <>
+//           <div className="bg-white p-4 flex justify-between items-center border-b">
+//             {/* ... (previous content) */}
+//             <div className="flex space-x-4">
+//               <button
+//                 className="text-gray-600 hover:text-gray-800"
+//                 style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
+//                 onClick={handleAudioCallClick}
+//               >
+//                 <AudioCallIcon />
+//               </button>
+//               {/* ... (other buttons) */}
+//             </div>
+//           </div>
+
+//           {/* ... (rest of the component) */}
+
+//           <AudioCallComponent
+//             open={isAudioCallOpen}
+//             onClose={() => setIsAudioCallOpen(false)}
+//             contact={activeContact}
+//           />
+//         </>
+//       )}
+//       {/* ... (ProfileSidebar) */}
+//     </div>
+//   );
+// }
+
+// export default ChatArea;
