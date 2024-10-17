@@ -1,7 +1,6 @@
-import { useState } from "react";
-
+import { useState, useRef } from "react";
+import EmojiPicker from "emoji-picker-react";
 import ProfileSidebar from "./ProfileSidebar";
-
 import {
   SearchIcon,
   SidebarIcon,
@@ -15,8 +14,21 @@ import {
 function ChatArea({ activeContact }) {
   const [message, setMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showEmojis, setShowEmojis] = useState(false);
+  const [muteModalOpen, setMuteModalOpen] = useState(false);
 
-  const messages = [
+  const handleMuteClick = () => {
+    setMuteModalOpen(true);
+  };
+
+  const handleMuteClose = () => {
+    setMuteModalOpen(false);
+  };
+
+  const handleMute = (duration) => {
+    console.log(`Muted for ${duration} minutes`);
+  };
+  const [messages, setMessages] = useState([
     { id: 1, sender: "user", content: "I hope these articles help." },
     {
       id: 2,
@@ -29,11 +41,20 @@ function ChatArea({ activeContact }) {
       sender: "other",
       content: "Do you know which App or feature it will require to set up.",
     },
-  ];
+  ]);
+
+  const fileInputRef = useRef(null);
 
   const handleSend = () => {
     if (message.trim()) {
-      console.log("Sending message:", message);
+      setMessages([
+        ...messages,
+        {
+          id: messages.length + 1,
+          sender: "user",
+          content: message,
+        },
+      ]);
       setMessage("");
     }
   };
@@ -42,9 +63,28 @@ function ChatArea({ activeContact }) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const handleEmojiClick = (emojiObject) => {
+    setMessage((prevMessage) => prevMessage + emojiObject.emoji);
+    setShowEmojis(false);
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setMessages([
+        ...messages,
+        {
+          id: messages.length + 1,
+          sender: "user",
+          content: `File uploaded: ${file.name}`,
+        },
+      ]);
+    }
+  };
+
   return (
     <div
-      className="flex-1 flex flex-col "
+      className="flex-1 flex flex-col"
       style={{
         backgroundColor: activeContact ? "white" : "#E0F2F1",
       }}
@@ -79,7 +119,7 @@ function ChatArea({ activeContact }) {
                 >
                   <rect width="40" height="40" rx="6" fill="#E0F2F1" />
                   <path
-                    fill-rule="evenodd"
+                    fillRule="evenodd"
                     d="M13.885 12.511C14.06 12.3363 14.2701 12.2008 14.5014 12.1134C14.7327 12.026 14.9799 11.9888 15.2267 12.0042C15.4735 12.0197 15.7142 12.0873 15.9328 12.2028C16.1515 12.3183 16.3431 12.4789 16.495 12.674L18.29 14.98C18.619 15.403 18.735 15.954 18.605 16.474L18.058 18.664C18.0299 18.7775 18.0315 18.8962 18.0627 19.0089C18.0939 19.1215 18.1536 19.2242 18.236 19.307L20.693 21.764C20.7759 21.8466 20.8788 21.9064 20.9916 21.9376C21.1044 21.9688 21.2234 21.9703 21.337 21.942L23.526 21.395C23.7826 21.3312 24.0504 21.3264 24.3091 21.381C24.5679 21.4356 24.8109 21.548 25.02 21.71L27.326 23.504C28.155 24.149 28.231 25.374 27.489 26.115L26.455 27.149C25.715 27.889 24.609 28.214 23.578 27.851C20.9387 26.9236 18.5425 25.4128 16.568 23.431C14.5864 21.4568 13.0755 19.061 12.148 16.422C11.786 15.392 12.111 14.285 12.851 13.545L13.885 12.511Z"
                     fill="#475569"
                   />
@@ -101,7 +141,6 @@ function ChatArea({ activeContact }) {
             </div>
           </div>
 
-          {/* chat Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => (
               <div
@@ -126,7 +165,7 @@ function ChatArea({ activeContact }) {
             ))}
           </div>
 
-          <div className="bg-white p-4 flex items-center space-x-2">
+          <div className="bg-white p-4 flex items-center space-x-2 relative">
             <button
               className="text-gray-600 hover:text-gray-300"
               style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
@@ -136,15 +175,28 @@ function ChatArea({ activeContact }) {
             <button
               className="text-gray-600 hover:text-gray-300"
               style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
+              onClick={() => setShowEmojis(!showEmojis)}
             >
               <EmojiIcon />
             </button>
+            {showEmojis && (
+              <div className="absolute bottom-16 left-0">
+                <EmojiPicker onEmojiClick={handleEmojiClick} />
+              </div>
+            )}
             <button
               className="text-gray-600 hover:text-gray-800"
               style={{ backgroundColor: "#E0F2F1", borderRadius: "60px" }}
+              onClick={() => fileInputRef.current.click()}
             >
               <PhotoIcon />
             </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
             <input
               type="text"
               value={message}
@@ -152,16 +204,15 @@ function ChatArea({ activeContact }) {
               placeholder="Type a message"
               className="flex-1 border rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-grey-500"
             />
-
             <button
               onClick={handleSend}
-              className=" text-white rounded-full p-2 hover:bg-gray-300"
+              className="text-white rounded-full p-2 hover:bg-gray-300"
             >
               <RecordIcon />
             </button>
             <button
               onClick={handleSend}
-              className=" text-white rounded-full p-2 hover:bg-gray-300"
+              className="text-white rounded-full p-2 hover:bg-gray-300"
             >
               <SearchIcon />
             </button>
@@ -172,6 +223,10 @@ function ChatArea({ activeContact }) {
         open={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         contact={activeContact}
+        muteModalOpen={muteModalOpen}
+        onMuteClick={handleMuteClick}
+        onMuteClose={handleMuteClose}
+        onMute={handleMute}
       />
     </div>
   );
