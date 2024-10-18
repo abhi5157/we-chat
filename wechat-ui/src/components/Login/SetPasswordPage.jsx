@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import ResetImage from "../../assets/ResetImage.png";
 
 const SetPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -63,7 +64,7 @@ const SetPasswordPage = () => {
 
       <div className="w-1/2 pl-8">
         <img
-          src="/api/placeholder/500/400"
+          src={ResetImage}
           alt="Password reset illustration"
           className="w-full"
         />

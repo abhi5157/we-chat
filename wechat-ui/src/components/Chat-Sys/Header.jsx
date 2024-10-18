@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Route, Navigate } from "react-router-dom";
 import { Avatar, IconButton, Menu, MenuItem, Dialog, Box } from "@mui/material";
 import EditProfile from "./EditProfile";
 import profile from "../../assets/profile.png";
 import { ChatIcon, ContactsIcon } from "./Icons";
 import { SearchIcon, AddIcon, NotificationIcon } from "./Icons";
+import Login from "../Login/Login/Login";
 
 const Header = ({ onEditProfile, onToggleSidebar, activeSidebar }) => {
   const [activeTab, setActiveTab] = useState("chats");
@@ -13,6 +15,7 @@ const Header = ({ onEditProfile, onToggleSidebar, activeSidebar }) => {
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+  const handleLogout = () => {};
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -106,7 +109,7 @@ const Header = ({ onEditProfile, onToggleSidebar, activeSidebar }) => {
         <MenuItem onClick={handleEditProfile}>Edit Profile</MenuItem>
         <MenuItem onClick={handleClose}>Settings</MenuItem>
         <MenuItem onClick={handleClose}>Change Password</MenuItem>
-        <MenuItem onClick={handleClose}>Log Out</MenuItem>
+        <MenuItem onClick={handleLogout}>Log Out</MenuItem>
       </Menu>
       <Dialog open={openEditProfile} onClose={() => setOpenEditProfile(false)}>
         <EditProfile onClose={() => setOpenEditProfile(false)} />

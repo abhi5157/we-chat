@@ -4,6 +4,8 @@ import Signup from "./components/Login/Signup/Signup";
 import Forgot from "./components/Login/Forgot/Forgot";
 import Login from "./components/Login/Login/Login";
 import ChatApp from "./components/Chat-Sys/ChatApp";
+import SetPasswordPage from "./components/Login/SetPasswordPage";
+import VerifyPage from "./components/Login/VerifyCode";
 // import { GoogleOAuthProvider } from "@react-oauth/google";
 // import AccountProvider from "./context/AccountProvider";
 
@@ -22,6 +24,8 @@ function App() {
         <Route path="/" element={<Navigate replace to="/login" />} />
 
         <Route path="/app" element={<ChatApp />} />
+        <Route path="/reset" element={<SetPasswordPage />} />
+        <Route path="/verify" element={<VerifyPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import Reset2 from "../../assets/Reset2.png";
 
 const VerifyCodePage = () => {
   const [code, setCode] = useState("");
@@ -26,7 +27,7 @@ const VerifyCodePage = () => {
       </div>
       <div className="w-1/2 bg-teal-50 flex items-center justify-center">
         <img
-          src="/api/placeholder/400/400"
+          src={Reset2}
           alt="Person with key and lock illustration"
           className="max-w-md"
         />
