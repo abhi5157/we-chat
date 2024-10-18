@@ -4,6 +4,7 @@ import {
   Add as AddIcon,
   FilterList as FilterListIcon,
 } from "@mui/icons-material";
+import { Avatar, IconButton, Menu, MenuItem, Dialog, Box } from "@mui/material";
 
 const contacts = [
   {
@@ -98,10 +99,22 @@ const contacts = [
 
 function Sidebar({ onSelectContact, activeContactId }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [archiveContact, setArchiveContact] = useState([]);
+  const [favourite, setFavourite] = useState([]);
 
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleFilterClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <div className="w-80 bg-white border-r overflow-y-auto h-screen">
@@ -112,9 +125,22 @@ function Sidebar({ onSelectContact, activeContactId }) {
             <button className="text-gray-500 hover:bg-blue-50 rounded-full p-1">
               <AddIcon fontSize="small" />
             </button>
-            <button className="text-gray-500 hover:bg-gray-100 rounded-full p-1">
+            <button
+              className="text-gray-500 hover:bg-gray-100 rounded-full p-1"
+              onClick={handleFilterClick}
+            >
               <FilterListIcon fontSize="small" />
             </button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>All Chat</MenuItem>
+              <MenuItem onClick={handleClose}>Active Chat</MenuItem>
+              <MenuItem onClick={handleClose}>Archived Chat</MenuItem>
+              <MenuItem onClick={handleClose}>Spam Message</MenuItem>
+            </Menu>
           </div>
         </div>
         <div className="relative">

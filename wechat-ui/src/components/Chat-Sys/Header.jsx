@@ -5,7 +5,7 @@ import profile from "../../assets/profile.png";
 import { ChatIcon, ContactsIcon } from "./Icons";
 import { SearchIcon, AddIcon, NotificationIcon } from "./Icons";
 
-const Header = () => {
+const Header = ({ onEditProfile, onToggleSidebar, activeSidebar }) => {
   const [activeTab, setActiveTab] = useState("chats");
   const [anchorEl, setAnchorEl] = useState(null);
   const [openEditProfile, setOpenEditProfile] = useState(false);
@@ -37,9 +37,11 @@ const Header = () => {
           <div className="flex space-x-1">
             <IconButton
               className={
-                activeTab === "chats" ? activeIconButtonClass : iconButtonClass
+                activeSidebar === "chat"
+                  ? activeIconButtonClass
+                  : iconButtonClass
               }
-              onClick={() => setActiveTab("chats")}
+              onClick={() => onToggleSidebar("chat")}
             >
               {/* <ChatIcon /> */}
               <svg
@@ -58,11 +60,11 @@ const Header = () => {
             </IconButton>
             <IconButton
               className={
-                activeTab === "contacts"
+                activeSidebar === "contacts"
                   ? activeIconButtonClass
                   : iconButtonClass
               }
-              onClick={() => setActiveTab("contacts")}
+              onClick={() => onToggleSidebar("contacts")}
             >
               {/* <ContactsIcon /> */}
               <svg
@@ -75,7 +77,7 @@ const Header = () => {
                 <rect width="48" height="48" rx="24" fill="#E0F2F1" />
                 <path
                   d="M21.5 24C22.4946 24 23.4484 23.6049 24.1517 22.9017C24.8549 22.1984 25.25 21.2446 25.25 20.25C25.25 19.2554 24.8549 18.3016 24.1517 17.5983C23.4484 16.8951 22.4946 16.5 21.5 16.5C20.5054 16.5 19.5516 16.8951 18.8483 17.5983C18.1451 18.3016 17.75 19.2554 17.75 20.25C17.75 21.2446 18.1451 22.1984 18.8483 22.9017C19.5516 23.6049 20.5054 24 21.5 24ZM15.25 31.5C15.25 31.5 14 31.5 14 30.25C14 29 15.25 25.25 21.5 25.25C27.75 25.25 29 29 29 30.25C29 31.5 27.75 31.5 27.75 31.5H15.25ZM27.75 18.375C27.75 18.2092 27.8158 18.0503 27.9331 17.9331C28.0503 17.8158 28.2092 17.75 28.375 17.75H33.375C33.5408 17.75 33.6997 17.8158 33.8169 17.9331C33.9342 18.0503 34 18.2092 34 18.375C34 18.5408 33.9342 18.6997 33.8169 18.8169C33.6997 18.9342 33.5408 19 33.375 19H28.375C28.2092 19 28.0503 18.9342 27.9331 18.8169C27.8158 18.6997 27.75 18.5408 27.75 18.375ZM28.375 21.5C28.2092 21.5 28.0503 21.5658 27.9331 21.6831C27.8158 21.8003 27.75 21.9592 27.75 22.125C27.75 22.2908 27.8158 22.4497 27.9331 22.5669C28.0503 22.6842 28.2092 22.75 28.375 22.75H33.375C33.5408 22.75 33.6997 22.6842 33.8169 22.5669C33.9342 22.4497 34 22.2908 34 22.125C34 21.9592 33.9342 21.8003 33.8169 21.6831C33.6997 21.5658 33.5408 21.5 33.375 21.5H28.375ZM30.875 25.25C30.7092 25.25 30.5503 25.3158 30.4331 25.4331C30.3158 25.5503 30.25 25.7092 30.25 25.875C30.25 26.0408 30.3158 26.1997 30.4331 26.3169C30.5503 26.4342 30.7092 26.5 30.875 26.5H33.375C33.5408 26.5 33.6997 26.4342 33.8169 26.3169C33.9342 26.1997 34 26.0408 34 25.875C34 25.7092 33.9342 25.5503 33.8169 25.4331C33.6997 25.3158 33.5408 25.25 33.375 25.25H30.875ZM30.875 29C30.7092 29 30.5503 29.0658 30.4331 29.1831C30.3158 29.3003 30.25 29.4592 30.25 29.625C30.25 29.7908 30.3158 29.9497 30.4331 30.0669C30.5503 30.1842 30.7092 30.25 30.875 30.25H33.375C33.5408 30.25 33.6997 30.1842 33.8169 30.0669C33.9342 29.9497 34 29.7908 34 29.625C34 29.4592 33.9342 29.3003 33.8169 29.1831C33.6997 29.0658 33.5408 29 33.375 29H30.875Z"
-                  fill="#334155"
+                  fill="#64748B"
                 />
               </svg>
             </IconButton>
@@ -114,3 +116,57 @@ const Header = () => {
 };
 
 export default Header;
+
+// import React from "react";
+// import { Avatar, IconButton } from "@mui/material";
+// import {
+//   ChatIcon,
+//   ContactsIcon,
+//   SearchIcon,
+//   AddIcon,
+//   NotificationIcon,
+// } from "./Icons";
+
+// const Header = ({ onEditProfile, onToggleSidebar, activeSidebar }) => {
+//   const iconButtonClass =
+//     "p-2 rounded-full transition-colors bg-white text-gray-600 hover:bg-gray-200";
+//   const activeIconButtonClass =
+//     "p-2 rounded-full transition-colors bg-[#E0F2F1] text-gray-800";
+
+//   return (
+//     <header className="bg-white shadow-md">
+//       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+//         <h1 className="text-2xl font-bold text-gray-800">WECHAT</h1>
+//         <div className="flex items-center space-x-4">
+//           <IconButton
+//             className={
+//               activeSidebar === "chat" ? activeIconButtonClass : iconButtonClass
+//             }
+//             onClick={() => onToggleSidebar("chat")}
+//           >
+//             <ChatIcon />
+//           </IconButton>
+//           <IconButton
+//             className={
+//               activeSidebar === "contacts"
+//                 ? activeIconButtonClass
+//                 : iconButtonClass
+//             }
+//             onClick={() => onToggleSidebar("contacts")}
+//           >
+//             <ContactsIcon />
+//           </IconButton>
+
+//           <IconButton className={iconButtonClass}>
+//             <NotificationIcon />
+//           </IconButton>
+//           <IconButton onClick={onEditProfile}>
+//             <Avatar src="/api/placeholder/32/32" alt="Profile" />
+//           </IconButton>
+//         </div>
+//       </div>
+//     </header>
+//   );
+// };
+
+// export default Header;

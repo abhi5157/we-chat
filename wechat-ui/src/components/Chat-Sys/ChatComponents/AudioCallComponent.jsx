@@ -13,9 +13,15 @@ import {
   MiceIcon,
   OptionsIcon2,
   EndCallIcon,
-} from "./Icons";
+} from "../Icons";
 
 const AudioCallComponent = ({ open, onClose, contact }) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
   const [isMuted, setIsMuted] = useState(false);
 
   const handleMuteToggle = () => {
@@ -44,44 +50,58 @@ const AudioCallComponent = ({ open, onClose, contact }) => {
           height: "100%",
           display: "flex",
           flexDirection: "column",
+          backgroundColor: "#FFFFFF",
+          padding: 2,
           alignItems: "center",
           justifyContent: "space-between",
-          padding: 3,
+          width: "100%",
         }}
       >
-        <Box sx={{ width: "100%", textAlign: "right" }}>
-          <IconButton onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
         <Box
           sx={{
+            height: "100%",
             display: "flex",
+            width: "100%",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "space-between",
+            padding: 3,
+            backgroundColor: "#E0F2F1",
           }}
         >
-          <Box
-            component="img"
-            src={contact?.avatar}
-            alt={contact?.name}
-            sx={{
-              width: 120,
-              height: 120,
-              borderRadius: "50%",
-              marginBottom: 2,
-            }}
-          />
-          <Typography variant="h6" sx={{ color: "#26A69A" }}>
-            {contact?.name}
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#64748B" }}>
-            Ringing...
-          </Typography>
-        </Box>
+          <Box sx={{ width: "100%", textAlign: "right" }}>
+            <IconButton onClick={onClose}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Box
+              component="img"
+              src={contact?.avatar}
+              alt={contact?.name}
+              sx={{
+                width: 120,
+                height: 120,
+                borderRadius: "50%",
+                marginBottom: 2,
+              }}
+            />
+            <Typography variant="h6" sx={{ color: "#26A69A" }}>
+              {contact?.name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#64748B" }}>
+              Ringing...
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex", gap: 3, my: 2 }}>
           <IconButton
             onClick={handleMuteToggle}
             sx={{
@@ -102,9 +122,21 @@ const AudioCallComponent = ({ open, onClose, contact }) => {
           >
             <CallEndIcon />
           </IconButton>
-          <IconButton>
+          {/* <IconButton>
             <AddMemberIcon />
           </IconButton>
+          <IconButton>
+            <VideoCallIcon />
+          </IconButton>
+          <IconButton>
+            <MicIcon />
+          </IconButton>
+          <IconButton>
+            <OptionsIcon2 />
+          </IconButton>
+          <IconButton>
+            <EndCallIcon />
+          </IconButton> */}
         </Box>
       </Box>
     </Dialog>

@@ -22,11 +22,11 @@ import {
   AttachFile as AttachFileIcon,
 } from "@mui/icons-material";
 
-import { MuteIcon, OptionsIcon, PhotoIcon } from "./Icons";
-import MuteModal from "./MuteModal";
-import MediaComponent from "./MediaComp";
+import { MuteIcon, OptionsIcon, PhotoIcon } from "../Icons";
+import MuteModal from "./ProfileSidebarCompnents/MuteModal";
+import MediaComponent from "./ProfileSidebarCompnents/MediaComp";
 
-import OptionsComponent from "./OptionsComponent";
+import OptionsComponent from "./ProfileSidebarCompnents/OptionsComponent";
 
 const ProfileSidebar = ({
   open,
