@@ -29,17 +29,15 @@ function SignupForm() {
         setError("Passwords do not match");
         return;
       }
-      const url = "http://localhost:8080/api/users";
-      const { data: res } = await axios.post(url, data);
+      const url = "http://localhost:5000/api/users";
+      const response = await axios.post(url, data);
+      console.log(response.data);
       navigate("/login");
-      console.log(res.message);
     } catch (error) {
-      if (
-        error.response &&
-        error.response.status >= 400 &&
-        error.response.status <= 500
-      ) {
-        setError(error.response.data.message);
+      if (error.response && error.response.data) {
+        setError(error.response.data);
+      } else {
+        setError("An error occurred. Please try again.");
       }
     }
   };

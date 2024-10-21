@@ -20,9 +20,9 @@ function LoginForm() {
     }
 
     try {
-      const url = "http://localhost:8080/api/auth";
-      const { data: res } = await axios.post(url, { email, password });
-      localStorage.setItem("token", res.data.token);
+      const url = "http://localhost:5000/api/auth/login"; // Updated URL
+      const { data } = await axios.post(url, { email, password });
+      localStorage.setItem("token", data.token);
       setError("");
       navigate("/app");
     } catch (error) {
@@ -31,7 +31,9 @@ function LoginForm() {
         error.response.status >= 400 &&
         error.response.status <= 500
       ) {
-        setError(error.response.data.message);
+        setError(
+          error.response.data.message || "An error occurred during login."
+        );
       } else {
         setError("An unexpected error occurred.");
       }
@@ -39,7 +41,7 @@ function LoginForm() {
   };
 
   const handleSignUpClick = () => {
-    navigate("/signup"); // Navigate to the sign-up page
+    navigate("/signup");
   };
 
   return (
@@ -116,7 +118,7 @@ function LoginForm() {
           Login
         </button>
         <p className="text-[12px] text-[#313131] text-center py-3">
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <button
             type="button"
             onClick={handleSignUpClick}
