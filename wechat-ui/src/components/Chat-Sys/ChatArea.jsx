@@ -3,6 +3,8 @@ import EmojiPicker from "emoji-picker-react";
 import ProfileSidebar from "./ChatComponents/ProfileSidebar";
 import AudioCallComponent from "./ChatComponents/AudioCallComponent";
 import VideoComponent from "./ChatComponents/VideoCallComponent";
+import axios from "axios";
+
 import {
   SearchIcon,
   SidebarIcon,
@@ -21,6 +23,7 @@ function ChatArea({ activeContact }) {
   const [muteModalOpen, setMuteModalOpen] = useState(false);
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isAudioCallOpen, setIsAudioCallOpen] = useState(false);
+  const [userData, setUserData] = useState({});
 
   const [messages, setMessages] = useState([
     { id: 1, sender: "user", content: "I hope these articles help." },
@@ -36,6 +39,7 @@ function ChatArea({ activeContact }) {
       content: "Do you know which App or feature it will require to set up.",
     },
   ]);
+
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
 
@@ -50,6 +54,10 @@ function ChatArea({ activeContact }) {
       stopRecording();
     }
   }, [isRecording]);
+
+  useEffect(() => {
+    fetch();
+  });
 
   const startRecording = async () => {
     try {
@@ -105,6 +113,12 @@ function ChatArea({ activeContact }) {
       reader.readAsDataURL(file);
     }
   };
+  // const fetch = async () => {
+  //   const url = "http://localhost:5000/users";
+  //   const response = await axios.get(url);
+  //   console.log("userData", response.data);
+  //   setUserData([...userData, response]);
+  // };
 
   const renderMessage = (msg) => {
     switch (msg.type) {

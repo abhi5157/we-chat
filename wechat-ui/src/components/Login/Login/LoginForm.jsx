@@ -4,6 +4,7 @@ import axios from "axios";
 import facebook from "../../../assets/facebook.png";
 import google from "../../../assets/google.png";
 import apple from "../../../assets/apple.png";
+import { loginRoute } from "../../../Utils/AllApi";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -20,7 +21,7 @@ function LoginForm() {
     }
 
     try {
-      const url = "http://localhost:5000/api/auth/login"; // Updated URL
+      const url = "http://localhost:5000/api/auth/login";
       const { data } = await axios.post(url, { email, password });
       localStorage.setItem("token", data.token);
       setError("");

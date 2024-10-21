@@ -7,6 +7,7 @@ import ChatArea from "./ChatArea";
 import UpdateNotification from "./UpdateNotification";
 import EditProfile from "./EditProfile";
 import Login from "../Login/Login/Login";
+import axios from "axios";
 
 function ChatApp() {
   const [showNotification, setShowNotification] = useState(true);
@@ -14,9 +15,11 @@ function ChatApp() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [activeSidebar, setActiveSidebar] = useState("chat");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [userData, setUserData] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
+    // fetch();
     const token = localStorage.getItem("token");
     if (token) {
       setIsAuthenticated(true);
@@ -46,6 +49,12 @@ function ChatApp() {
     localStorage.removeItem("token");
     navigate("/login");
   };
+  // const fetch = async () => {
+  //   const url = "http://localhost:5000/users";
+  //   const response = await axios.get(url);
+  //   console.log("userData", response.data);
+  //   setUserData([...userData, response.data]);
+  // };
 
   if (!isAuthenticated) {
     return <Login />;
@@ -53,6 +62,7 @@ function ChatApp() {
 
   return (
     <div className="flex flex-col h-screen bg-#E0F2F1">
+      {/* userData */}
       <Header
         onEditProfile={handleEditProfile}
         onToggleSidebar={toggleSidebar}

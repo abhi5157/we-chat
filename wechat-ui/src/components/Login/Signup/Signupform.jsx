@@ -5,6 +5,7 @@ import axios from "axios";
 import facebook from "../../../assets/facebook.png";
 import google from "../../../assets/google.png";
 import apple from "../../../assets/apple.png";
+import { registerRoute } from "../../../Utils/AllApi";
 
 function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
