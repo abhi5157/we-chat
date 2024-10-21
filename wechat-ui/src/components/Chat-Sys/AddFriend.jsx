@@ -14,15 +14,15 @@ import {
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 
-const AddFriend = ({ open, onClose, contacts, onAddFriend }) => {
+const AddFriend = ({ open, onClose, users, onAddFriend }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredContacts, setFilteredContacts] = useState([]);
 
   const handleSearch = (event) => {
     const term = event.target.value;
     setSearchTerm(term);
-    const filtered = contacts.filter((contact) =>
-      contact.name.toLowerCase().includes(term.toLowerCase())
+    const filtered = users.filter((user) =>
+      user.firstName.toLowerCase().includes(term.toLowerCase())
     );
     setFilteredContacts(filtered);
   };
@@ -53,14 +53,14 @@ const AddFriend = ({ open, onClose, contacts, onAddFriend }) => {
         <List>
           {filteredContacts.map((contact) => (
             <ListItem
-              key={contact.id}
+              key={contact._id}
               button
               onClick={() => handleAddFriend(contact)}
             >
               <ListItemAvatar>
-                <Avatar src={contact.avatar} alt={contact.name} />
+                <Avatar src={contact.avatar} alt={contact.firstName} />
               </ListItemAvatar>
-              <ListItemText primary={contact.name} />
+              <ListItemText primary={contact.firstName} />
               <Button variant="outlined" style={{ color: "#26A69A" }}>
                 Add
               </Button>

@@ -3,7 +3,6 @@ import EmojiPicker from "emoji-picker-react";
 import ProfileSidebar from "./ChatComponents/ProfileSidebar";
 import AudioCallComponent from "./ChatComponents/AudioCallComponent";
 import VideoComponent from "./ChatComponents/VideoCallComponent";
-import axios from "axios";
 
 import {
   SearchIcon,
@@ -16,29 +15,15 @@ import {
   AudioCallIcon,
 } from "./Icons";
 
-function ChatArea({ activeContact }) {
+function ChatArea({ activeUser, users }) {
   const [message, setMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const [muteModalOpen, setMuteModalOpen] = useState(false);
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isAudioCallOpen, setIsAudioCallOpen] = useState(false);
-  const [userData, setUserData] = useState({});
 
-  const [messages, setMessages] = useState([
-    { id: 1, sender: "user", content: "I hope these articles help." },
-    {
-      id: 2,
-      sender: "other",
-      content: "https://www.envato.com/atomic-power-plant-engine/",
-    },
-    { id: 3, sender: "user", content: "I hope these articles help." },
-    {
-      id: 4,
-      sender: "other",
-      content: "Do you know which App or feature it will require to set up.",
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
 
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -56,8 +41,13 @@ function ChatArea({ activeContact }) {
   }, [isRecording]);
 
   useEffect(() => {
-    fetch();
-  });
+    // Here you would typically fetch messages for the active user
+    // For now, we'll just set some dummy messages
+    setMessages([
+      { id: 1, sender: "user", content: "Hello!" },
+      { id: 2, sender: "other", content: "Hi there!" },
+    ]);
+  }, [activeUser]);
 
   const startRecording = async () => {
     try {
@@ -113,12 +103,6 @@ function ChatArea({ activeContact }) {
       reader.readAsDataURL(file);
     }
   };
-  // const fetch = async () => {
-  //   const url = "http://localhost:5000/users";
-  //   const response = await axios.get(url);
-  //   console.log("userData", response.data);
-  //   setUserData([...userData, response]);
-  // };
 
   const renderMessage = (msg) => {
     switch (msg.type) {
@@ -159,6 +143,7 @@ function ChatArea({ activeContact }) {
         return msg.content;
     }
   };
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -166,6 +151,7 @@ function ChatArea({ activeContact }) {
   const handleAudioCallClick = () => {
     setIsAudioCallOpen(true);
   };
+
   const handleMediaClick = (msg) => {
     console.log("Open full-size view for:", msg);
   };
@@ -173,23 +159,23 @@ function ChatArea({ activeContact }) {
   return (
     <div
       className="flex-1 flex flex-col"
-      style={{ backgroundColor: activeContact ? "white" : "#E0F2F1" }}
+      style={{ backgroundColor: activeUser ? "white" : "#E0F2F1" }}
     >
-      {activeContact && (
+      {activeUser && (
         <>
           {/* Header */}
           <div className="bg-white p-4 flex justify-between items-center border-b">
             <div className="flex items-center">
-              <img
-                src={activeContact.avatar}
-                alt={activeContact.name}
-                className="w-10 h-10 rounded-full mr-3"
-              />
+              <div className="w-10 h-10 rounded-full mr-3 bg-gray-300 flex items-center justify-center">
+                <span className="text-xl text-gray-600">
+                  {activeUser.firstName[0]}
+                </span>
+              </div>
               <div>
                 <h2 className="font-semibold" style={{ color: "#0AB64C" }}>
-                  {activeContact.name}
+                  {activeUser.firstName} {activeUser.lastName}
                 </h2>
-                <p className="text-sm text-gray-500">Online</p>
+                <p className="text-sm text-gray-500">{activeUser.email}</p>
               </div>
             </div>
             <div className="flex space-x-4">
@@ -325,7 +311,7 @@ function ChatArea({ activeContact }) {
       <ProfileSidebar
         open={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        contact={activeContact}
+        contact={activeUser}
         muteModalOpen={muteModalOpen}
         onMuteClick={() => setMuteModalOpen(true)}
         onMuteClose={() => setMuteModalOpen(false)}
@@ -334,12 +320,12 @@ function ChatArea({ activeContact }) {
       <AudioCallComponent
         open={isAudioCallOpen}
         onClose={() => setIsAudioCallOpen(false)}
-        contact={activeContact}
+        contact={activeUser}
       />
       <VideoComponent
         open={isVideoCallOpen}
         onClose={() => setIsVideoCallOpen(false)}
-        contact={activeContact}
+        contact={activeUser}
       />
     </div>
   );
