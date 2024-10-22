@@ -26,13 +26,16 @@ router.post("/upload", upload.single("mediaFile"), (req, res) => {
 });
 
 router.post("/send", async (req, res) => {
-  const { senderId, receiverId, message } = req.body;
+  const { senderId, receiverId, content } = req.body;
+  console.log(req.body);
+
+  console.log("msg send ", content);
 
   try {
     const newMessage = new Chat({
       sender: senderId,
       receiver: receiverId,
-      //message
+      content,
     });
 
     await newMessage.save();

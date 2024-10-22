@@ -18,15 +18,13 @@ function Sidebar({ onSelectUser, activeUserId, users }) {
   const [isAddFriendDialogOpen, setIsAddFriendDialogOpen] = useState(false);
 
   useEffect(() => {
-    const filtered = (showArchived ? archivedUsers : users)
-      .filter((user) =>
-        `${user.firstName} ${user.lastName}`
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      )
-      .sort((a, b) => Number(b.isPinned) - Number(a.isPinned)); // Sort by pin status
+    const filtered = users.filter((user) =>
+      `${user.firstName} ${user.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
     setFilteredUsers(filtered);
-  }, [users, archivedUsers, searchTerm, showArchived]);
+  }, [users, searchTerm]);
 
   const handleFilterClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -44,28 +42,12 @@ function Sidebar({ onSelectUser, activeUserId, users }) {
   const handleContextMenuClose = () => setContextMenu(null);
 
   const toggleArchive = (userId) => {
-    const userIndex = users.findIndex((u) => u._id === userId);
-    if (userIndex !== -1) {
-      const updatedUsers = [...users];
-      const [archivedUser] = updatedUsers.splice(userIndex, 1);
-      setArchivedUsers([...archivedUsers, archivedUser]);
-    } else {
-      const archivedIndex = archivedUsers.findIndex((u) => u._id === userId);
-      if (archivedIndex !== -1) {
-        const updatedArchived = [...archivedUsers];
-        const [unarchivedUser] = updatedArchived.splice(archivedIndex, 1);
-        setArchivedUsers(updatedArchived);
-        users.push(unarchivedUser);
-      }
-    }
+    // Implement archive logic here
     handleContextMenuClose();
   };
 
   const togglePin = (userId) => {
-    const updatedUsers = users.map((user) =>
-      user._id === userId ? { ...user, isPinned: !user.isPinned } : user
-    );
-    setFilteredUsers(updatedUsers);
+    // Implement pin logic here
     handleContextMenuClose();
   };
 
@@ -175,9 +157,9 @@ function Sidebar({ onSelectUser, activeUserId, users }) {
             : "Pin"}
         </MenuItem>
         <MenuItem onClick={() => toggleArchive(selectedUserId)}>
-          {archivedUsers.find((u) => u._id === selectedUserId)
-            ? "Unarchive"
-            : "Archive"}
+          {users.find((u) => u._id === selectedUserId)
+            ? "Archive"
+            : "Unarchive"}
         </MenuItem>
       </Menu>
 

@@ -148,6 +148,9 @@ app.post("/api/auth/login", async (req, res) => {
     });
 
     res.json({ token, user: { id: user._id, email: user.email } });
+    // const _id = user._id;
+    // const email = user.email;
+    // res.json({ token, _id, email });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
