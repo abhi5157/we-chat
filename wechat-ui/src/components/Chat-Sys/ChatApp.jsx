@@ -77,7 +77,7 @@ function ChatApp() {
         onLogout={handleLogout}
       />
       <div className="flex flex-1 overflow-hidden">
-        {/* {showEditProfile ? (
+        {showEditProfile ? (
           <EditProfile onClose={handleCloseEditProfile} />
         ) : (
           <>
@@ -96,13 +96,7 @@ function ChatApp() {
             )}
             <ChatArea activeUser={activeUser} />
           </>
-        )} */}
-        <Sidebar
-          onSelectUser={handleSelectUser}
-          activeUserId={activeUser?._id}
-          users={users}
-        />
-        <ChatArea activeUser={activeUser} />
+        )}
       </div>
       {showNotification && (
         <UpdateNotification onDismiss={() => setShowNotification(false)} />

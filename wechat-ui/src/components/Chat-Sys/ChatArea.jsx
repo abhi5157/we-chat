@@ -355,14 +355,10 @@ const API_URL = "http://localhost:5000/api";
 const SOCKET_URL = "http://localhost:5000";
 
 function ChatArea({ activeUser }) {
-  // console.log("profileUser in chatArea", localStorage.getItem("profileUser"));
   const currentUser = localStorage.getItem("profileUser");
   const userId = localStorage.getItem("Puser");
   console.log("userId  ->", userId);
-
-  // console.log(currentUser?.id);
-
-  console.log(activeUser);
+  // console.log(activeUser);
   console.log("chatArea currentUser", currentUser?.id);
   const [message, setMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -376,7 +372,6 @@ function ChatArea({ activeUser }) {
   const [socket, setSocket] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const fileInputRef = useRef(null);
   const mediaInputRef = useRef(null);
   const audioRef = useRef(null);
@@ -385,6 +380,11 @@ function ChatArea({ activeUser }) {
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
+
+    newSocket.on("newMessage", (message) => {
+      console.log("Received new message:", message);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
 
     return () => newSocket.close();
   }, []);
@@ -396,7 +396,7 @@ function ChatArea({ activeUser }) {
         receiverId: activeUser._id,
       });
     }
-  }, [socket, activeUser]);
+  }, [socket, activeUser, userId]);
 
   useEffect(() => {
     if (socket) {
@@ -407,10 +407,10 @@ function ChatArea({ activeUser }) {
   }, [socket]);
 
   useEffect(() => {
-    if (activeUser && userId) {
+    if (activeUser?._id && userId) {
       fetchChatHistory();
     }
-  }, [activeUser]);
+  }, [activeUser?._id, userId]);
 
   useEffect(() => {
     if (isRecording) {
@@ -431,19 +431,22 @@ function ChatArea({ activeUser }) {
 
   const fetchChatHistory = async () => {
     setIsLoading(true);
-    setError(null);
     try {
+      console.log("Fetching chat history for:", userId, activeUser._id);
       const response = await fetch(
         `${API_URL}/chat/history/${userId}/${activeUser._id}`
       );
+
       if (!response.ok) {
-        throw new Error("Failed to fetch chat history");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
+      console.log("Chat history received:", data);
       setMessages(data);
     } catch (err) {
-      setError("Failed to load chat history");
       console.error("Error fetching chat history:", err);
+      setError("Failed to load messages");
     } finally {
       setIsLoading(false);
     }
@@ -477,57 +480,42 @@ function ChatArea({ activeUser }) {
   };
 
   const handleSend = async () => {
-    if ((!message.trim() && !audioBlob) || !socket) return;
+    if (!message.trim() || !socket) return;
 
     try {
-      let messageData = {
-        sender: userId,
-        receiver: activeUser._id,
-        timestamp: new Date(),
-        type: audioBlob ? "audio" : "text",
+      const messageData = {
+        senderId: userId,
+        receiverId: activeUser._id,
+        content: message.trim(),
       };
 
-      if (audioBlob) {
-        const formData = new FormData();
-        formData.append("mediaFile", audioBlob, "audio.ogg");
-        formData.append("sender", userId);
-        formData.append("receiver", activeUser._id);
+      console.log("Sending message:", messageData);
 
-        const response = await fetch(`${API_URL}/chat/upload`, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to upload audio");
-        }
-
-        const result = await response.json();
-        messageData.media = result.filePath;
-        messageData.content = "Audio message";
-      } else {
-        messageData.content = message.trim();
-      }
-
-      await fetch(`${API_URL}/chat/send`, {
+      // Send to backend
+      const response = await fetch(`${API_URL}/chat/send`, {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(messageData),
       });
 
-      // Emit message through socket
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Message send result:", result);
+
+      // Emit to socket
       socket.emit("sendMessage", messageData);
 
       // Update local state
       setMessages((prev) => [...prev, messageData]);
       setMessage("");
-      setAudioBlob(null);
     } catch (err) {
-      setError("Failed to send message");
       console.error("Error sending message:", err);
+      setError("Failed to send message");
     }
   };
 
@@ -541,6 +529,8 @@ function ChatArea({ activeUser }) {
       formData.append("sender", userId);
       formData.append("receiver", activeUser._id);
 
+      console.log("Uploading file:", file.name);
+
       const response = await fetch(`${API_URL}/chat/upload`, {
         method: "POST",
         body: formData,
@@ -551,17 +541,18 @@ function ChatArea({ activeUser }) {
       }
 
       const result = await response.json();
+      console.log("File upload result:", result);
+
       const messageData = {
-        sender: userId,
-        receiver: activeUser._id,
+        senderId: userId,
+        receiverId: activeUser._id,
         content: file.name,
         type: type,
         media: result.filePath,
-        timestamp: new Date(),
       };
 
-      // Send message to server
-      await fetch(`${API_URL}/chat/send`, {
+      // Send message with file info
+      const msgResponse = await fetch(`${API_URL}/chat/send`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -569,28 +560,28 @@ function ChatArea({ activeUser }) {
         body: JSON.stringify(messageData),
       });
 
-      // Emit message through socket
-      socket.emit("sendMessage", messageData);
+      if (!msgResponse.ok) {
+        throw new Error("Failed to send message with file");
+      }
 
-      // Update local state
+      socket.emit("sendMessage", messageData);
       setMessages((prev) => [...prev, messageData]);
     } catch (err) {
+      console.error("Error handling file upload:", err);
       setError("Failed to upload file");
-      console.error("Error uploading file:", err);
     }
   };
 
   const renderMessage = (msg) => {
-    const isOwnMessage = msg.sender === userId;
+    const isOwnMessage = msg.senderId === userId || msg.sender === userId;
 
     switch (msg.type) {
       case "image":
         return (
           <img
             src={`${API_URL}/${msg.media}`}
-            alt={msg.content}
-            className="max-w-xs rounded-lg cursor-pointer hover:opacity-90"
-            onClick={() => handleMediaClick(msg)}
+            alt="Image"
+            className="max-w-xs rounded-lg"
           />
         );
       case "video":
@@ -598,8 +589,7 @@ function ChatArea({ activeUser }) {
           <video
             src={`${API_URL}/${msg.media}`}
             controls
-            className="max-w-xs rounded-lg cursor-pointer"
-            onClick={() => handleMediaClick(msg)}
+            className="max-w-xs rounded-lg"
           />
         );
       case "audio":
@@ -628,7 +618,7 @@ function ChatArea({ activeUser }) {
           <div className="break-words">
             {msg.content}
             <div className="text-xs text-gray-500 mt-1">
-              {new Date(msg.timestamp).toLocaleTimeString()}
+              {new Date(msg.timestamp || msg.createdAt).toLocaleTimeString()}
             </div>
           </div>
         );

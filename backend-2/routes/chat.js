@@ -5,6 +5,7 @@ const User = require("../models/user");
 const { initiateCall, endCall } = require("../controllers/chat");
 const upload = require("../multerConfig");
 const Media = require("../models/media");
+const { log } = require("console");
 
 router.post("/upload", upload.single("mediaFile"), (req, res) => {
   if (!req.file) {
@@ -27,7 +28,6 @@ router.post("/upload", upload.single("mediaFile"), (req, res) => {
 
 router.post("/send", async (req, res) => {
   const { senderId, receiverId, content } = req.body;
-  console.log(req.body);
 
   console.log("msg send ", content);
 
