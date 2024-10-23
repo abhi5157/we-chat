@@ -352,6 +352,12 @@ import {
 } from "./Icons";
 
 const SOCKET_URL = "http://localhost:5000";
+const ALLOWED_FILE_TYPES = {
+  image: ["image/jpeg", "image/png", "image/gif"],
+  video: ["video/mp4", "video/webm"],
+  audio: ["audio/mp3", "audio/wav", "audio/mpeg"],
+  document: [".pdf", ".doc", ".docx", ".txt"],
+};
 
 function ChatArea({ activeUser }) {
   const userId = localStorage.getItem("Puser");
@@ -364,6 +370,9 @@ function ChatArea({ activeUser }) {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const messagesEndRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
@@ -375,7 +384,11 @@ function ChatArea({ activeUser }) {
 
     newSocket.on("receiveMessage", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
-      scrollToBottom();
+      // scrollToBottom();
+    });
+
+    newSocket.on("fileProgress", (progress) => {
+      setUploadProgress(progress);
     });
 
     return () => newSocket.close();
@@ -383,14 +396,109 @@ function ChatArea({ activeUser }) {
 
   useEffect(() => {
     if (socket && activeUser && userId) {
-      // Join a unique room based on user IDs
       const room = [userId, activeUser._id].sort().join("-");
       socket.emit("joinRoom", room);
     }
   }, [socket, activeUser, userId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const fileType = file.type;
+    const isValidType = Object.values(ALLOWED_FILE_TYPES)
+      .flat()
+      .includes(fileType);
+
+    if (!isValidType) {
+      alert("Invalid file type");
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("senderId", userId);
+    formData.append("receiverId", activeUser._id);
+
+    try {
+      const response = await fetch(`${SOCKET_URL}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        const messageData = {
+          senderId: userId,
+          receiverId: activeUser._id,
+          content: data.url,
+          type: getFileType(file.type),
+          fileName: file.name,
+          timestamp: new Date().toISOString(),
+        };
+
+        const room = [userId, activeUser._id].sort().join("-");
+        socket.emit("sendMessage", { room, message: messageData });
+        setMessages((prev) => [...prev, messageData]);
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Error uploading file");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const getFileType = (mimeType) => {
+    if (ALLOWED_FILE_TYPES.image.includes(mimeType)) return "image";
+    if (ALLOWED_FILE_TYPES.video.includes(mimeType)) return "video";
+    if (ALLOWED_FILE_TYPES.audio.includes(mimeType)) return "audio";
+    return "document";
+  };
+
+  const renderMessage = (msg) => {
+    switch (msg.type) {
+      case "image":
+        return (
+          <img src={msg.content} alt="Shared" className="max-w-xs rounded" />
+        );
+      case "video":
+        return (
+          <video controls className="max-w-xs">
+            <source src={msg.content} type="video/mp4" />
+            Your browser does not support video playback.
+          </video>
+        );
+      case "audio":
+        return (
+          <audio controls className="max-w-xs">
+            <source src={msg.content} type="audio/mpeg" />
+            Your browser does not support audio playback.
+          </audio>
+        );
+      case "document":
+        return (
+          <a
+            href={msg.content}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 text-blue-500 hover:underline"
+          >
+            <AddIcon className="w-5 h-5" />
+            <span>{msg.fileName}</span>
+          </a>
+        );
+      default:
+        return <div className="break-words">{msg.content}</div>;
+    }
   };
 
   const handleSend = () => {
@@ -400,14 +508,12 @@ function ChatArea({ activeUser }) {
       senderId: userId,
       receiverId: activeUser._id,
       content: message.trim(),
+      type: "text",
       timestamp: new Date().toISOString(),
     };
 
-    // Emit the message to the room
     const room = [userId, activeUser._id].sort().join("-");
     socket.emit("sendMessage", { room, message: messageData });
-
-    // Add message to local state
     setMessages((prev) => [...prev, messageData]);
     setMessage("");
     scrollToBottom();
@@ -431,6 +537,7 @@ function ChatArea({ activeUser }) {
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Header */}
+
       <div className="bg-white p-4 flex justify-between items-center border-b">
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full mr-3 bg-gray-300 flex items-center justify-center">
@@ -483,11 +590,9 @@ function ChatArea({ activeUser }) {
                   : "bg-gray-100"
               }`}
             >
-              <div className="break-words">
-                {msg.content}
-                <div className="text-xs text-gray-500 mt-1">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </div>
+              {renderMessage(msg)}
+              <div className="text-xs text-gray-500 mt-1">
+                {new Date(msg.timestamp).toLocaleTimeString()}
               </div>
             </div>
           </div>
@@ -495,7 +600,7 @@ function ChatArea({ activeUser }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
+      {/* Input Area with File Upload */}
       <div className="border-t p-4">
         <div className="flex items-center space-x-2">
           <button
@@ -504,12 +609,27 @@ function ChatArea({ activeUser }) {
           >
             <EmojiIcon />
           </button>
-          {showEmojis && (
-            <div className="absolute bottom-20 left-0">
-              <EmojiPicker
-                onEmojiClick={(emojiObject) =>
-                  setMessage((prev) => prev + emojiObject.emoji)
-                }
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            className="hidden"
+            multiple={false}
+          />
+
+          <button
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <AddIcon />
+          </button>
+
+          {isUploading && (
+            <div className="h-1 w-20 bg-gray-200 rounded">
+              <div
+                className="h-full bg-green-500 rounded"
+                style={{ width: `${uploadProgress}%` }}
               />
             </div>
           )}
@@ -518,7 +638,7 @@ function ChatArea({ activeUser }) {
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="Type a message"
             className="flex-1 border rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
