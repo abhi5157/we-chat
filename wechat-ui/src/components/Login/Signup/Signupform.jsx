@@ -5,7 +5,7 @@ import axios from "axios";
 import facebook from "../../../assets/facebook.png";
 import google from "../../../assets/google.png";
 import apple from "../../../assets/apple.png";
-import { registerRoute } from "../../../Utils/AllApi";
+// import { registerRoute } from "../../../Utils/AllApi";
 
 function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,7 +32,9 @@ function SignupForm() {
       }
       const url = "http://localhost:5000/api/users";
       const response = await axios.post(url, data);
-      console.log(response.data);
+      // console.log(response.data);
+      localStorage.setItem("ChatApp", JSON.stringify(response.data));
+
       navigate("/login");
     } catch (error) {
       if (error.response && error.response.data) {

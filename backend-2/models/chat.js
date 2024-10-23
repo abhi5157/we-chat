@@ -11,11 +11,10 @@ const chatSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  // message: {
-  //     type: String,
-  //     required: true,
-
-  // },
+  content: {
+    type: String,
+    required: true,
+  },
   isRead: {
     type: Boolean,
     default: false,

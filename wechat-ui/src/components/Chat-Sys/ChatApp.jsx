@@ -20,6 +20,7 @@ function ChatApp() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    console.log("token", token);
     if (token) {
       setIsAuthenticated(true);
       fetchUsers();
@@ -32,6 +33,7 @@ function ChatApp() {
     try {
       const response = await axios.get("http://localhost:5000/users");
       setUsers(response.data);
+      console.log("user Data", response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -39,12 +41,14 @@ function ChatApp() {
 
   const handleSelectUser = (userId) => {
     const selectedUser = users.find((user) => user._id === userId);
+
     setActiveUser(selectedUser);
   };
 
   const handleEditProfile = () => {
     setShowEditProfile(true);
   };
+  console.log(activeUser);
 
   const handleCloseEditProfile = () => {
     setShowEditProfile(false);
