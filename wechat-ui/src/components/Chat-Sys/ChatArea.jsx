@@ -15,7 +15,7 @@ import {
   AudioCallIcon,
 } from "./Icons";
 
-function ChatArea({ activeUser, users }) {
+function ChatArea({ activeUser }) {
   const [message, setMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
@@ -41,8 +41,6 @@ function ChatArea({ activeUser, users }) {
   }, [isRecording]);
 
   useEffect(() => {
-    // Here you would typically fetch messages for the active user
-    // For now, we'll just set some dummy messages
     setMessages([
       { id: 1, sender: "user", content: "Hello!" },
       { id: 2, sender: "other", content: "Hi there!" },

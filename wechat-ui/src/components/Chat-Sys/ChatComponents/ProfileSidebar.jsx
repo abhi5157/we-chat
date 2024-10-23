@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Drawer,
   Box,
@@ -71,11 +71,12 @@ const ProfileSidebar = ({
             >
               <Avatar
                 src={contact?.avatar || "/api/placeholder/100/100"}
-                alt={contact?.name || "Contact"}
+                alt={contact?.firstName || "Contact"}
                 sx={{ width: 100, height: 100, mb: 2 }}
               />
               <Typography variant="h6">
-                {contact?.name || "Konstantin Frank"}
+                {contact?.firstName + " " + contact?.lastName ||
+                  "Konstantin Frank"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Active Now
@@ -123,7 +124,7 @@ const ProfileSidebar = ({
                 </ListItemIcon>
                 <ListItemText
                   primary="Phone Number"
-                  secondary={contact?.phone || "+1 (555) 123-4567"}
+                  secondary={contact?.mobile || "+1 (555) 123-4567"}
                 />
               </ListItem>
               <ListItem>
