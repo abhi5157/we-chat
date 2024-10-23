@@ -8,7 +8,7 @@ import UpdateNotification from "./UpdateNotification";
 import EditProfile from "./EditProfile";
 import Login from "../Login/Login/Login";
 import axios from "axios";
-
+import { SocketProvider } from "..//../context/SocketContext.jsx";
 function ChatApp() {
   const [showNotification, setShowNotification] = useState(true);
   const [activeUser, setActiveUser] = useState(null);
@@ -65,39 +65,41 @@ function ChatApp() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-#E0F2F1">
-      <Header
-        onEditProfile={handleEditProfile}
-        onToggleSidebar={toggleSidebar}
-        activeSidebar={activeSidebar}
-        onLogout={handleLogout}
-      />
-      <div className="flex flex-1 overflow-hidden">
-        {showEditProfile ? (
-          <EditProfile onClose={handleCloseEditProfile} />
-        ) : (
-          <>
-            {activeSidebar === "chat" ? (
-              <Sidebar
-                onSelectUser={handleSelectUser}
-                activeUserId={activeUser?._id}
-                users={users}
-              />
-            ) : (
-              <ContactsSidebar
-                onSelectUser={handleSelectUser}
-                activeUserId={activeUser?._id}
-                users={users}
-              />
-            )}
-            <ChatArea activeUser={activeUser} />
-          </>
+    <SocketProvider>
+      <div className="flex flex-col h-screen bg-#E0F2F1">
+        <Header
+          onEditProfile={handleEditProfile}
+          onToggleSidebar={toggleSidebar}
+          activeSidebar={activeSidebar}
+          onLogout={handleLogout}
+        />
+        <div className="flex flex-1 overflow-hidden">
+          {showEditProfile ? (
+            <EditProfile onClose={handleCloseEditProfile} />
+          ) : (
+            <>
+              {activeSidebar === "chat" ? (
+                <Sidebar
+                  onSelectUser={handleSelectUser}
+                  activeUserId={activeUser?._id}
+                  users={users}
+                />
+              ) : (
+                <ContactsSidebar
+                  onSelectUser={handleSelectUser}
+                  activeUserId={activeUser?._id}
+                  users={users}
+                />
+              )}
+              <ChatArea activeUser={activeUser} />
+            </>
+          )}
+        </div>
+        {showNotification && (
+          <UpdateNotification onDismiss={() => setShowNotification(false)} />
         )}
       </div>
-      {showNotification && (
-        <UpdateNotification onDismiss={() => setShowNotification(false)} />
-      )}
-    </div>
+    </SocketProvider>
   );
 }
 

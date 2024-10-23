@@ -13,12 +13,12 @@ const Chat = require("./models/chat");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+// const callRoutes = require("./routes/call");
 
 const app = express();
 const server = http.createServer(app);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// CORS configuration
 app.use(
   cors({
     origin: "*",
@@ -26,6 +26,7 @@ app.use(
   })
 );
 
+// Socket.IO setup with CORS
 const io = socketIo(server, {
   cors: {
     origin: "*",
@@ -33,25 +34,67 @@ const io = socketIo(server, {
   },
 });
 
+signalingServer(io);
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/api/chat", chatRoutes);
-
+app.use("/uploads", express.static("uploads"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// app.use("/api/call", callRoutes);
+// MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("DB Connetion Successfull");
+    console.log("DB Connection Successful");
   })
   .catch((err) => {
     console.log(err.message);
   });
 
-app.use("/uploads", express.static("uploads"));
+// Store active socket connections with their user IDs
+const userSocketMap = new Map();
 
-app.use("/chat", chatRoutes);
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
+  // When user connects, store their socket ID with their user ID
+  socket.on("register", (userId) => {
+    userSocketMap.set(userId, socket.id);
+    console.log(`User ${userId} registered with socket ${socket.id}`);
+  });
+
+  // Handle private messages
+  socket.on("private-message", ({ senderId, receiverId, message }) => {
+    const receiverSocketId = userSocketMap.get(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receive-message", {
+        senderId,
+        message,
+        timestamp: new Date(),
+      });
+    }
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    // Remove user from socket map
+    for (const [userId, socketId] of userSocketMap.entries()) {
+      if (socketId === socket.id) {
+        userSocketMap.delete(userId);
+        console.log(`User ${userId} disconnected`);
+        break;
+      }
+    }
+  });
+});
+// Helper function for password reset
 const generateResetToken = () => {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -62,33 +105,7 @@ const generateResetToken = () => {
   return token;
 };
 
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("joinChat", ({ senderId, receiverId }) => {
-    const room = [senderId, receiverId].sort().join("_");
-    socket.join(room);
-    console.log(`User ${senderId} joined chat room: ${room}`);
-  });
-
-  socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
-    const newMessage = new Chat({
-      sender: senderId,
-      receiver: receiverId,
-      message,
-    });
-
-    await newMessage.save();
-
-    const room = [senderId, receiverId].sort().join("_");
-    io.to(room).emit("newMessage", { senderId, receiverId, message });
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
-
+// Authentication Routes
 app.post("/api/users", async (req, res) => {
   const { firstName, lastName, email, mobile, password } = req.body;
 
@@ -153,6 +170,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+// Password Reset Routes
 app.post("/forgot-password", async (req, res) => {
   const { userName } = req.body;
 
@@ -215,6 +233,7 @@ app.post("/reset-password", async (req, res) => {
   }
 });
 
+// User Routes
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find();
@@ -224,12 +243,10 @@ app.get("/users", async (req, res) => {
   }
 });
 
-require("./sockets/groupChat")(server);
+// signalingServer(server);
 
-const Server = http.createServer(app);
-signalingServer(server);
-
-const port = process.env.PORT || 3001;
-app.listen(port, () => {
+// Start the server
+const port = process.env.PORT || 5000;
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

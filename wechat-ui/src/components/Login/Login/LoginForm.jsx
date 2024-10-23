@@ -24,6 +24,8 @@ function LoginForm() {
       const url = "http://localhost:5000/api/auth/login";
       const { data } = await axios.post(url, { email, password });
       localStorage.setItem("token", data.token);
+      localStorage.setItem("Puser", data.user.id);
+      localStorage.setItem("Pemail", data.user.email);
       console.log("Puser -> token", data.user.id);
 
       setError("");
