@@ -351,15 +351,10 @@ import {
   AudioCallIcon,
 } from "./Icons";
 
-const API_URL = "http://localhost:5000/api";
 const SOCKET_URL = "http://localhost:5000";
 
 function ChatArea({ activeUser }) {
-  const currentUser = localStorage.getItem("profileUser");
   const userId = localStorage.getItem("Puser");
-  console.log("userId  ->", userId);
-  // console.log(activeUser);
-  console.log("chatArea currentUser", currentUser?.id);
   const [message, setMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
@@ -367,23 +362,20 @@ function ChatArea({ activeUser }) {
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isAudioCallOpen, setIsAudioCallOpen] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState(null);
   const [socket, setSocket] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const fileInputRef = useRef(null);
-  const mediaInputRef = useRef(null);
-  const audioRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
 
-    newSocket.on("newMessage", (message) => {
-      console.log("Received new message:", message);
+    newSocket.on("connect", () => {
+      console.log("Connected to socket server");
+    });
+
+    newSocket.on("receiveMessage", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
+      scrollToBottom();
     });
 
     return () => newSocket.close();
@@ -391,242 +383,34 @@ function ChatArea({ activeUser }) {
 
   useEffect(() => {
     if (socket && activeUser && userId) {
-      socket.emit("joinChat", {
-        senderId: userId,
-        receiverId: activeUser._id,
-      });
+      // Join a unique room based on user IDs
+      const room = [userId, activeUser._id].sort().join("-");
+      socket.emit("joinRoom", room);
     }
   }, [socket, activeUser, userId]);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("newMessage", (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      });
-    }
-  }, [socket]);
-
-  useEffect(() => {
-    if (activeUser?._id && userId) {
-      fetchChatHistory();
-    }
-  }, [activeUser?._id, userId]);
-
-  useEffect(() => {
-    if (isRecording) {
-      startRecording();
-    } else {
-      stopRecording();
-    }
-  }, [isRecording]);
-
-  // Scroll to bottom when new messages arrive
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
-
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
-
-  const fetchChatHistory = async () => {
-    setIsLoading(true);
-    try {
-      console.log("Fetching chat history for:", userId, activeUser._id);
-      const response = await fetch(
-        `${API_URL}/chat/history/${userId}/${activeUser._id}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Chat history received:", data);
-      setMessages(data);
-    } catch (err) {
-      console.error("Error fetching chat history:", err);
-      setError("Failed to load messages");
-    } finally {
-      setIsLoading(false);
-    }
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioRef.current = new MediaRecorder(stream);
-      const chunks = [];
+  const handleSend = () => {
+    if (!message.trim() || !socket || !activeUser) return;
 
-      audioRef.current.ondataavailable = (e) => chunks.push(e.data);
-      audioRef.current.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
-        setAudioBlob(blob);
-      };
+    const messageData = {
+      senderId: userId,
+      receiverId: activeUser._id,
+      content: message.trim(),
+      timestamp: new Date().toISOString(),
+    };
 
-      audioRef.current.start();
-    } catch (error) {
-      console.error("Error starting recording:", error);
-      setError("Failed to start recording");
-      setIsRecording(false);
-    }
-  };
+    // Emit the message to the room
+    const room = [userId, activeUser._id].sort().join("-");
+    socket.emit("sendMessage", { room, message: messageData });
 
-  const stopRecording = () => {
-    if (audioRef.current && audioRef.current.state !== "inactive") {
-      audioRef.current.stop();
-      audioRef.current.stream.getTracks().forEach((track) => track.stop());
-    }
-  };
-
-  const handleSend = async () => {
-    if (!message.trim() || !socket) return;
-
-    try {
-      const messageData = {
-        senderId: userId,
-        receiverId: activeUser._id,
-        content: message.trim(),
-      };
-
-      console.log("Sending message:", messageData);
-
-      // Send to backend
-      const response = await fetch(`${API_URL}/chat/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(messageData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log("Message send result:", result);
-
-      // Emit to socket
-      socket.emit("sendMessage", messageData);
-
-      // Update local state
-      setMessages((prev) => [...prev, messageData]);
-      setMessage("");
-    } catch (err) {
-      console.error("Error sending message:", err);
-      setError("Failed to send message");
-    }
-  };
-
-  const handleFileUpload = async (event, type) => {
-    const file = event.target.files[0];
-    if (!file || !socket) return;
-
-    try {
-      const formData = new FormData();
-      formData.append("mediaFile", file);
-      formData.append("sender", userId);
-      formData.append("receiver", activeUser._id);
-
-      console.log("Uploading file:", file.name);
-
-      const response = await fetch(`${API_URL}/chat/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      const result = await response.json();
-      console.log("File upload result:", result);
-
-      const messageData = {
-        senderId: userId,
-        receiverId: activeUser._id,
-        content: file.name,
-        type: type,
-        media: result.filePath,
-      };
-
-      // Send message with file info
-      const msgResponse = await fetch(`${API_URL}/chat/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(messageData),
-      });
-
-      if (!msgResponse.ok) {
-        throw new Error("Failed to send message with file");
-      }
-
-      socket.emit("sendMessage", messageData);
-      setMessages((prev) => [...prev, messageData]);
-    } catch (err) {
-      console.error("Error handling file upload:", err);
-      setError("Failed to upload file");
-    }
-  };
-
-  const renderMessage = (msg) => {
-    const isOwnMessage = msg.senderId === userId || msg.sender === userId;
-
-    switch (msg.type) {
-      case "image":
-        return (
-          <img
-            src={`${API_URL}/${msg.media}`}
-            alt="Image"
-            className="max-w-xs rounded-lg"
-          />
-        );
-      case "video":
-        return (
-          <video
-            src={`${API_URL}/${msg.media}`}
-            controls
-            className="max-w-xs rounded-lg"
-          />
-        );
-      case "audio":
-        return (
-          <audio
-            src={`${API_URL}/${msg.media}`}
-            controls
-            className="max-w-xs"
-          />
-        );
-      case "document":
-        return (
-          <div className="flex items-center space-x-2">
-            <span>{msg.content}</span>
-            <a
-              href={`${API_URL}/${msg.media}`}
-              download
-              className="text-blue-500 hover:text-blue-600"
-            >
-              Download
-            </a>
-          </div>
-        );
-      default:
-        return (
-          <div className="break-words">
-            {msg.content}
-            <div className="text-xs text-gray-500 mt-1">
-              {new Date(msg.timestamp || msg.createdAt).toLocaleTimeString()}
-            </div>
-          </div>
-        );
-    }
-  };
-
-  const handleMediaClick = (msg) => {
-    console.log("Opening media preview for:", msg);
+    // Add message to local state
+    setMessages((prev) => [...prev, messageData]);
+    setMessage("");
+    scrollToBottom();
   };
 
   const handleKeyPress = (e) => {
@@ -685,31 +469,26 @@ function ChatArea({ activeUser }) {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading && (
-          <div className="text-center">
-            <p>Loading messages...</p>
-          </div>
-        )}
-        {error && (
-          <div className="text-center text-red-500">
-            <p>{error}</p>
-          </div>
-        )}
         {messages.map((msg, index) => (
           <div
             key={index}
             className={`flex ${
-              msg.sender === userId ? "justify-end" : "justify-start"
+              msg.senderId === userId ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-xs lg:max-w-md xl:max-w-lg rounded-lg p-3 ${
-                msg.sender === userId
+                msg.senderId === userId
                   ? "bg-[#26A69A] text-white"
-                  : "bg-gray-100 "
+                  : "bg-gray-100"
               }`}
             >
-              {renderMessage(msg)}
+              <div className="break-words">
+                {msg.content}
+                <div className="text-xs text-gray-500 mt-1">
+                  {new Date(msg.timestamp).toLocaleTimeString()}
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -719,20 +498,6 @@ function ChatArea({ activeUser }) {
       {/* Input Area */}
       <div className="border-t p-4">
         <div className="flex items-center space-x-2">
-          <button
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <AddIcon />
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={(e) => handleFileUpload(e, "document")}
-            accept=".pdf,.doc,.docx,.txt"
-          />
-
           <button
             className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
             onClick={() => setShowEmojis(!showEmojis)}
@@ -749,25 +514,6 @@ function ChatArea({ activeUser }) {
             </div>
           )}
 
-          <button
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
-            onClick={() => mediaInputRef.current.click()}
-          >
-            <PhotoIcon />
-          </button>
-          <input
-            type="file"
-            ref={mediaInputRef}
-            className="hidden"
-            onChange={(e) =>
-              handleFileUpload(
-                e,
-                e.target.files[0]?.type.startsWith("image/") ? "image" : "video"
-              )
-            }
-            accept="image/*,video/*"
-          />
-
           <input
             type="text"
             value={message}
@@ -776,15 +522,6 @@ function ChatArea({ activeUser }) {
             placeholder="Type a message"
             className="flex-1 border rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
-
-          <button
-            className={`p-2 rounded-full ${
-              isRecording ? "bg-red-500" : "bg-gray-100 hover:bg-gray-200"
-            }`}
-            onClick={() => setIsRecording(!isRecording)}
-          >
-            <RecordIcon />
-          </button>
 
           <button
             className="p-2 rounded-full bg-gray-500 hover:bg-green-600 text-white"
