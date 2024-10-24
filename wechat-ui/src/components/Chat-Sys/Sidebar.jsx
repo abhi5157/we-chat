@@ -24,7 +24,7 @@ function Sidebar({ onSelectUser, activeUserId, users }) {
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       )
-      .sort((a, b) => Number(b.isPinned) - Number(a.isPinned)); // Sort by pin status
+      .sort((a, b) => Number(b.isPinned) - Number(a.isPinned));
     setFilteredUsers(filtered);
   }, [users, archivedUsers, searchTerm, showArchived]);
 

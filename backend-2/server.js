@@ -14,6 +14,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 // const callRoutes = require("./routes/call");
+const profileRoutes = require("./routes/profile");
 
 const app = express();
 const server = http.createServer(app);
@@ -30,7 +31,7 @@ app.use(
 const io = socketIo(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
 
@@ -42,9 +43,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/api/chat", chatRoutes);
 app.use("/uploads", express.static("uploads"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// app.use("/api/call", callRoutes);
+app.use("/api", profileRoutes);
+
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URL, {
@@ -60,6 +60,8 @@ mongoose
 
 // Store active socket connections with their user IDs
 const userSocketMap = new Map();
+app.set("io", io); // Use app.set instead of server.app.set
+app.set("userSocketMap", userSocketMap);
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
@@ -70,14 +72,29 @@ io.on("connection", (socket) => {
     console.log(`User ${userId} registered with socket ${socket.id}`);
   });
 
-  // Handle private messages
-  socket.on("private-message", ({ senderId, receiverId, message }) => {
+  socket.on("private-message", async (data) => {
+    const { senderId, receiverId, message, type, fileName } = data;
     const receiverSocketId = userSocketMap.get(receiverId);
+
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("receive-message", {
         senderId,
-        message,
+        content: message,
+        type,
+        fileName,
         timestamp: new Date(),
+      });
+    }
+  });
+
+  // Handle file transfer progress
+  socket.on("upload-progress", (data) => {
+    const receiverSocketId = userSocketMap.get(data.receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("upload-progress-update", {
+        senderId: data.senderId,
+        progress: data.progress,
+        fileName: data.fileName,
       });
     }
   });
@@ -94,6 +111,7 @@ io.on("connection", (socket) => {
     }
   });
 });
+
 // Helper function for password reset
 const generateResetToken = () => {
   const chars =
@@ -242,8 +260,6 @@ app.get("/users", async (req, res) => {
     res.status(500).send(`Error fetching users: ${error.message}`);
   }
 });
-
-// signalingServer(server);
 
 // Start the server
 const port = process.env.PORT || 5000;

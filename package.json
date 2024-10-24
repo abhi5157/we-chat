@@ -3,6 +3,8 @@
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "lucide-react": "^0.453.0"
+    "lucide-react": "^0.453.0",
+    "simple-peer": "^9.11.1",
+    "socket.io-client": "^4.8.0"
   }
 }

@@ -9,6 +9,7 @@ import EditProfile from "./EditProfile";
 import Login from "../Login/Login/Login";
 import axios from "axios";
 import { SocketProvider } from "..//../context/SocketContext.jsx";
+
 function ChatApp() {
   const [showNotification, setShowNotification] = useState(true);
   const [activeUser, setActiveUser] = useState(null);
